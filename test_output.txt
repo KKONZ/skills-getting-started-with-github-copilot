@@ -1,0 +1,72 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.12, pytest-9.0.2, pluggy-1.6.0 -- /usr/local/py-utils/venvs/pytest/bin/python
+cachedir: .pytest_cache
+rootdir: /workspaces/skills-getting-started-with-github-copilot
+configfile: pytest.ini
+plugins: anyio-4.13.0
+collecting ... collected 29 items
+
+tests/test_app.py::TestRootEndpoint::test_root_redirect PASSED           [  3%]
+tests/test_app.py::TestRootEndpoint::test_root_redirect_follow PASSED    [  6%]
+tests/test_app.py::TestGetActivities::test_get_all_activities PASSED     [ 10%]
+tests/test_app.py::TestGetActivities::test_activity_structure PASSED     [ 13%]
+tests/test_app.py::TestGetActivities::test_activities_have_participants PASSED [ 17%]
+tests/test_app.py::TestGetActivities::test_response_content_type PASSED  [ 20%]
+tests/test_app.py::TestSignupForActivity::test_successful_signup PASSED  [ 24%]
+tests/test_app.py::TestSignupForActivity::test_signup_multiple_students PASSED [ 27%]
+tests/test_app.py::TestSignupForActivity::test_signup_activity_not_found PASSED [ 31%]
+tests/test_app.py::TestSignupForActivity::test_signup_already_registered PASSED [ 34%]
+tests/test_app.py::TestSignupForActivity::test_signup_different_activities PASSED [ 37%]
+tests/test_app.py::TestSignupForActivity::test_signup_case_sensitive_activity_name PASSED [ 41%]
+tests/test_app.py::TestSignupForActivity::test_signup_with_special_characters_email PASSED [ 44%]
+tests/test_app.py::TestSignupForActivity::test_signup_empty_email PASSED [ 48%]
+tests/test_app.py::TestUnregisterFromActivity::test_successful_unregister PASSED [ 51%]
+tests/test_app.py::TestUnregisterFromActivity::test_unregister_activity_not_found PASSED [ 55%]
+tests/test_app.py::TestUnregisterFromActivity::test_unregister_not_signed_up PASSED [ 58%]
+tests/test_app.py::TestUnregisterFromActivity::test_unregister_multiple_students PASSED [ 62%]
+tests/test_app.py::TestUnregisterFromActivity::test_signup_then_unregister PASSED [ 65%]
+tests/test_app.py::TestEdgeCases::test_activity_with_url_special_characters PASSED [ 68%]
+tests/test_app.py::TestEdgeCases::test_concurrent_signups_same_activity PASSED [ 72%]
+tests/test_app.py::TestEdgeCases::test_response_message_format PASSED    [ 75%]
+tests/test_app.py::TestEdgeCases::test_activities_list_not_mutated_across_requests FAILED [ 79%]
+tests/test_app.py::TestEdgeCases::test_numeric_activity_name_parameter PASSED [ 82%]
+tests/test_app.py::TestEdgeCases::test_very_long_email PASSED            [ 86%]
+tests/test_app.py::TestDataIntegrity::test_participants_list_is_list_type PASSED [ 89%]
+tests/test_app.py::TestDataIntegrity::test_max_participants_is_integer PASSED [ 93%]
+tests/test_app.py::TestDataIntegrity::test_activity_descriptions_are_strings PASSED [ 96%]
+tests/test_app.py::TestDataIntegrity::test_all_required_activities_present PASSED [100%]
+
+=================================== FAILURES ===================================
+________ TestEdgeCases.test_activities_list_not_mutated_across_requests ________
+
+self = <tests.test_app.TestEdgeCases object at 0x7b6693e70e90>
+client = <starlette.testclient.TestClient object at 0x7b6693d5ecf0>
+fresh_activities = None
+
+    def test_activities_list_not_mutated_across_requests(self, client, fresh_activities):
+        """Test that activities data structure is maintained correctly"""
+        initial_response = client.get("/activities")
+        initial_count = len(initial_response.json()["Chess Club"]["participants"])
+    
+        # Signup
+        client.post(
+            "/activities/Chess Club/signup",
+            params={"email": "newstudent@mergington.edu"}
+        )
+    
+        # Try to signup to different activity
+        client.post(
+            "/activities/Programming Class/signup",
+            params={"email": "another@mergington.edu"}
+        )
+    
+        # Verify Chess Club only increased by 1
+        final_response = client.get("/activities")
+        final_count = len(final_response.json()["Chess Club"]["participants"])
+>       assert final_count == initial_count + 1
+E       assert 4 == (4 + 1)
+
+tests/test_app.py:366: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_app.py::TestEdgeCases::test_activities_list_not_mutated_across_requests
+========================= 1 failed, 28 passed in 0.86s =========================
